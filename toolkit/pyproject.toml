@@ -1,0 +1,14 @@
+[project]
+
+name = "toolkit"
+version = "0.1.0"
+description = "JWT utilities toolkit"
+authors = [{ name = "Barath" }]
+dependencies = [
+    "python-jose==3.4.0",
+    "fastapi==0.115.13"
+    ]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
