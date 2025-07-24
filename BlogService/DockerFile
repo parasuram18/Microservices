@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+RUN mkdir /blog
+WORKDIR /blog
+
+COPY BlogService/requirements.txt .
+
+COPY toolkit ./toolkit
+
+RUN pip install --upgrade pip
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install -e toolkit
+
+COPY /BlogService /blog
+RUN apt-get update && apt-get install -y curl
+COPY BlogService/start.sh ./start.sh
+RUN chmod +x start.sh
+
+ENTRYPOINT [ "./start.sh" ]

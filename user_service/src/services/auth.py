@@ -32,23 +32,24 @@ async def generate_token(obj, info):
     except:
         return None
 
-# def validate_token(info):
-#     request = info.context['request']
-#     token = request.headers.get('Authorization')
-#     if not token or not token.startswith('Bearer'):
-#         raise HTTPException(404, "Authentication credentials were Not Found")
-#     token = token.split(' ')[1]
-#     try:
-#         payload = jwt.decode(token, config.SECRET_KEY, [config.JWT_ALGORITHM])
-#         return payload
-#     except ExpiredSignatureError:
-#         raise HTTPException(404, "Token Expired")
-#     except JWTError:
-#         raise HTTPException(404, "Invalid Token")
+def validate_token(info):
+    request = info.context['request']
+    token = request.headers.get('authorization')
+    if not token or not token.startswith('Bearer'):
+        raise HTTPException(404, "Authentication credentials were Not Found")
+    token = token.split(' ')[1]
+    try:
+        payload = jwt.decode(token, config.SECRET_KEY, [config.JWT_ALGORITHM])
+        return payload
+    except ExpiredSignatureError:
+        raise HTTPException(404, "Token Expired")
+    except JWTError:
+        raise HTTPException(404, "Invalid Token")
         
-# def AuthenticateUser(info):
-#     payload = validate_token(info)
-#     info.context['user'] = payload.get('id')
-#     info.context['role'] = payload.get('role')
-#     print( info.context['user'])
+def AuthenticateUser(info):
+
+    payload = validate_token(info)
+    info.context['user'] = payload.get('id')
+    info.context['role'] = payload.get('role')
+    print( info.context['user'])
 

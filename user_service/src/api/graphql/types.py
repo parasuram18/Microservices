@@ -4,7 +4,7 @@ from enum import Enum
 from strawberry import Info
 from ...services.user_services import *
 from strawberry.scalars import JSON
-
+from ...core.database import Session, AsyncSessionLocal
 class Roles(Enum):
     ADMIN = 'admin'
     MANAGER = 'manager'
@@ -47,16 +47,14 @@ class User:
     address: Optional[Address] = None
 
     @strawberry.field
-    async def role(self, info:Info)->List[RoleRes]:
-        return await get_role(self.id, info)
+    async def role(self)->RoleRes:
+        return await get_role(self.id)
     
     @staticmethod
-    async def resolve_reference(id:strawberry.ID, info:Info) -> "User":
-        db:AsyncSession = info.context['db']
-        stmt = select(CustomUser).where(CustomUser.id==int(id))
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
-        return User(id=user.id, name=user.name, email=user.email, age=user.age, address=user.address)
+    async def resolve_reference(id:strawberry.ID) -> "User":
+        user = await user_resolver(id)
+        if user:
+            return User(id=user.id, name=user.name, email=user.email, age=user.age, address=user.address)
     
 @strawberry.input
 class LoginData:

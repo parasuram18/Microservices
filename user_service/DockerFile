@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+RUN mkdir /user
+
+WORKDIR /user
+
+COPY user_service/requirements.txt .
+
+COPY toolkit ./toolkit
+
+RUN apt-get update && apt-get install -y curl
+RUN pip install --upgrade pip
+RUN pip install -e toolkit
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY user_service /user
+
+COPY user_service/start.sh ./start.sh
+RUN chmod +x start.sh
+
+ENTRYPOINT [ "./start.sh" ]

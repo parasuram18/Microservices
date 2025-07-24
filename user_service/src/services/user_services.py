@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from .auth import *
 from graphql import GraphQLError
 import traceback
+from ..core.database import AsyncSessionLocal, Session
 # auth_user = 
 
 
@@ -96,12 +97,12 @@ async def get_user(info:Info):
         print("......", str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="something went wrong")
 
-async def get_role(id, info:Info):
-    db:AsyncSession = info.context['db']
-    stmt = select(RoleMapping).options(selectinload(RoleMapping.user), selectinload(RoleMapping.role)).where(RoleMapping.user_id==id)
-    roles = (await db.execute(stmt)).scalars().all()
-    userroles = [obj.role for obj in roles]
-    return userroles
+async def get_role(id):
+    async with AsyncSessionLocal() as db:
+        stmt = select(RoleMapping).options(selectinload(RoleMapping.user), selectinload(RoleMapping.role)).where(RoleMapping.user_id==id)
+        result = await db.execute(stmt)
+        role = result.scalar_one_or_none()
+        return role.role
 
 async def get_users_per_role(role_id, info):
     db:AsyncSession = info.context['db']
@@ -119,3 +120,10 @@ async def login_user(input, info):
     if not userobj.check_password(input.password):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"Incorrect password"})
     return await generate_token(userobj, info)
+
+async def user_resolver(id):
+    async with AsyncSessionLocal() as db:
+            stmt = select(CustomUser).where(CustomUser.id==int(id))
+            result = await db.execute(stmt)
+            return result.scalar_one_or_none()
+

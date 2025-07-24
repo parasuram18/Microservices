@@ -1,0 +1,112 @@
+
+
+services:
+  user_service:
+    build:
+      context: .
+      dockerfile: user_service/DockerFile
+    ports:
+      - "8001:8000"
+
+    environment:
+      SYNC_DB_URL: postgresql://postgres:postgres@user_db:5432/userdb
+      ASYNC_DB_URL: postgresql+asyncpg://postgres:postgres@user_db:5432/userdb
+
+    depends_on:
+      user_db:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: on-failure:3
+    
+  user_db:
+
+    image: postgres:13
+    ports:
+      - "5434:5432"
+
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - user_db_data:/var/lib/postgresql/data/
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  blog_service:
+
+    build:
+      context: .
+      dockerfile: BlogService/DockerFile
+    ports:
+      - "8002:8000"
+
+    environment:
+      ASYNC_DB_URL: postgresql+asyncpg://postgres:postgres@blog_db:5432/blogdb
+      SYNC_DB_URL: postgresql://postgres:postgres@blog_db:5432/blogdb
+      
+    depends_on:
+      blog_db:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: on-failure:3
+
+  blog_db:
+    image: postgres:13
+    ports:
+      - "5435:5432"
+
+    environment:
+      POSTGRES_DB: blogdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    volumes:
+      - blog_db_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+
+  federation_gateway:
+
+    build:
+      context: ./federation-gateway
+      dockerfile: DockerFile
+    ports:
+      - "4000:4000"
+
+    depends_on:
+      user_service:
+        condition: service_healthy
+      blog_service:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: on-failure:3
+
+volumes:
+  user_db_data:
+  blog_db_data:

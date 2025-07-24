@@ -1,11 +1,11 @@
 # main.py
 from fastapi import FastAPI, Request
 from strawberry.fastapi import GraphQLRouter
-from .src.api.graphql.schemas import schema
-from .src.core.database import Session
-import jwt
-from .src.core import config
+from src.api.graphql.schemas import schema
+from src.core.database import Session, AsyncSessionLocal, AsyncSession
 
+
+app = FastAPI()
 
 
 
@@ -23,5 +23,8 @@ async def get_context(session:Session):
  
 graphql_app = GraphQLRouter(schema, context_getter=get_context)
 
-app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
+
+@app.get("/health")
+async def root():
+    return {"status":"ok"}
