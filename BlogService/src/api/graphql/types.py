@@ -10,7 +10,7 @@ class User:
     @strawberry.field
     async def publishes(self):
         await get_publish_count(self.id)
-    # publishes : Optional[int]
+    publishes : Optional[int]
 
 
 

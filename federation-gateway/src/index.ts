@@ -34,8 +34,8 @@ class AuthHeader extends RemoteGraphQLDataSource {
 const gateway = new ApolloGateway({
   supergraphSdl: new IntrospectAndCompose({
     subgraphs: [
-      { name: 'user',    url: 'http://user_service:8000/graphql' },
-      { name: 'blog',  url: 'http://blog_service:8000/graphql' },
+      { name: 'user',    url: 'http://user_service:8000/graphql' }, // change port for local run 
+      { name: 'blog',  url: 'http://blog_service:8000/graphql' }, // change port for local run 
     ],
   }),
   buildService: ({ url }) => new AuthHeader({ url }),
