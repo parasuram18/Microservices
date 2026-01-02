@@ -1,0 +1,10 @@
+strawberry-graphql[fastapi]
+uvicorn[standard]
+passlib==1.7.4
+fastapi[standard]==0.115.13
+asyncpg==0.30.0
+psycopg2-binary==2.9.9
+alembic==1.14.1
+python-jose[cryptography]
+argon2_cffi==25.1.0
+pyjwt==2.9.0
